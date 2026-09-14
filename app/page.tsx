@@ -139,11 +139,23 @@ export default function Home() {
         )}
 
         {mode === 'live' && address === '' && description === '' && !isCascading && (
-          <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 flex items-start gap-3">
-            <Lightbulb className="h-5 w-5 text-blue-400 shrink-0" />
-            <div className="text-sm text-blue-200/80 leading-relaxed">
-              <strong>Tip for Live Mode:</strong> You can enter your own real-world emergency, or try an example like: <em>"Main water line burst in basement. Need immediate shutoff."</em> and set your ETA/budget constraints. Real phone calls will be placed.
+          <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <Lightbulb className="h-5 w-5 text-blue-400 shrink-0 mt-0.5" />
+              <div className="text-sm text-blue-200/80 leading-relaxed">
+                <strong>Live CALL-E Mode:</strong> Real phone calls will be placed. Enter an emergency description or click the button to autofill a test incident to dial your contractor roster.
+              </div>
             </div>
+            <button
+              type="button"
+              onClick={() => {
+                setAddress('420 Market St, Apt 4B, San Francisco, CA');
+                setDescription('Active water line leak in master bathroom. Flooding hazard requiring emergency shutoff and repair.');
+              }}
+              className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shrink-0 transition-colors shadow-sm"
+            >
+              Autofill Test Incident
+            </button>
           </div>
         )}
 

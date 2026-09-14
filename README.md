@@ -68,8 +68,8 @@ flowchart TD
 ### Installation
 ```bash
 # Clone repository
-git clone https://github.com/your-username/FixFast.git
-cd FixFast
+git clone https://github.com/DheerajBishnoi/FixFast-Powered_by_Call-E.git
+cd FixFast-Powered_by_Call-E
 
 # Install dependencies
 npm install

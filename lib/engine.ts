@@ -3,8 +3,13 @@ import { getContractorsForTrade } from './roster';
 import { generateSimulationOutcome } from './simulator';
 import { planCalleCall, executeCalleCall, pollCalleRun } from './calle-adapter';
 
-// In-memory store for active cascade sessions
-const activeSessions = new Map<string, CascadeSession>();
+// In-memory store for active cascade sessions attached to globalThis
+const globalForSessions = globalThis as unknown as {
+  activeSessions: Map<string, CascadeSession> | undefined;
+};
+
+const activeSessions = globalForSessions.activeSessions ?? new Map<string, CascadeSession>();
+globalForSessions.activeSessions = activeSessions;
 
 export function createCascadeSession(incident: Incident, mode: 'simulator' | 'live' = 'simulator'): CascadeSession {
   const contractors = getContractorsForTrade(incident.trade);

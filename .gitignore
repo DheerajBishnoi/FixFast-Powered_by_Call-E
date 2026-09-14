@@ -20,3 +20,4 @@ yarn-error.log*
 # IDE / System files
 .vscode/
 .DS_Store
+graphify-out/
