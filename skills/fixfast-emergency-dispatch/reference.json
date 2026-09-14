@@ -1,0 +1,46 @@
+{
+  "name": "fixfast-emergency-dispatch",
+  "version": "1.0.0",
+  "inputs": {
+    "type": "object",
+    "required": ["trade", "address", "description", "max_eta_minutes", "max_budget"],
+    "properties": {
+      "trade": {
+        "type": "string",
+        "enum": ["plumbing", "hvac", "locksmith", "electrical"],
+        "description": "Category of emergency contractor needed"
+      },
+      "address": {
+        "type": "string",
+        "description": "Physical property address requiring emergency access"
+      },
+      "description": {
+        "type": "string",
+        "description": "Detailed description of active physical hazard"
+      },
+      "max_eta_minutes": {
+        "type": "integer",
+        "default": 90,
+        "description": "Maximum acceptable technician arrival time"
+      },
+      "max_budget": {
+        "type": "number",
+        "default": 350,
+        "description": "Maximum authorized initial dispatch/callout fee in USD"
+      }
+    }
+  },
+  "fixtures": [
+    {
+      "id": "burst-pipe-market-st",
+      "trade": "plumbing",
+      "address": "420 Market St, Apt 4B, San Francisco, CA",
+      "max_eta_minutes": 90,
+      "max_budget": 350,
+      "expected_outcome": "accepted",
+      "expected_winning_contractor": "Metro Rooter & Drain",
+      "expected_fee": 220,
+      "expected_eta": 45
+    }
+  ]
+}
