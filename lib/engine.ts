@@ -120,6 +120,7 @@ export async function stepCascadeSession(sessionId: string): Promise<CascadeSess
       console.error(`[FixFast] CALL-E execution failed for ${contractor.name}:`, error);
       currentAttempt.status = 'failed';
       currentAttempt.endedAt = new Date().toISOString();
+      const isBalanceError = error.message?.toLowerCase().includes('insufficient') || error.message?.toLowerCase().includes('balance');
       currentAttempt.result = {
         contractorAvailable: false,
         arrivalEtaMinutes: null,
@@ -127,11 +128,18 @@ export async function stepCascadeSession(sessionId: string): Promise<CascadeSess
         technicianName: null,
         dispatchReferenceCode: null,
         confirmedBooking: false,
-        notes: `System Error: Failed to connect to CALL-E CLI. Reason: ${error.message}`,
-        declineReason: 'System Integration Error',
+        notes: isBalanceError ? error.message : `Call failed: ${error.message}`,
+        declineReason: isBalanceError ? 'Insufficient CALL-E Balance' : 'System Integration Error',
         quoteVerified: false
       };
-      evaluateOutcomeAndAdvance(session, currentAttempt, incident);
+
+      if (isBalanceError) {
+        // Account is out of phone balance: stop cascade cleanly instead of failing all remaining contractors
+        session.status = 'exhausted';
+        session.completedAt = new Date().toISOString();
+      } else {
+        evaluateOutcomeAndAdvance(session, currentAttempt, incident);
+      }
     }
 
   } else if (currentAttempt.status === 'dialing' || currentAttempt.status === 'in_conversation') {

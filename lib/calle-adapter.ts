@@ -79,7 +79,24 @@ export async function planCalleCall(contractor: Contractor, incident: Incident):
     const confirmToken = s.confirm_token || s.confirmToken || parsed.confirm_token;
 
     if (!confirmToken) {
-      throw new Error(`CALL-E did not return confirmation token: ${JSON.stringify(s)}`);
+      let reason = '';
+      if (Array.isArray(s.clarifying_questions) && s.clarifying_questions.length > 0) {
+        reason = s.clarifying_questions.join(' ');
+      } else if (s.confirm_summary) {
+        reason = s.confirm_summary;
+      } else if (Array.isArray(s.questions) && s.questions.length > 0) {
+        reason = s.questions.map((q: any) => q.question || '').filter(Boolean).join(' ');
+      } else if (s.error) {
+        reason = typeof s.error === 'string' ? s.error : JSON.stringify(s.error);
+      } else {
+        reason = JSON.stringify(s);
+      }
+
+      if (reason.toLowerCase().includes('insufficient') || reason.toLowerCase().includes('top up') || reason.toLowerCase().includes('balance')) {
+        throw new Error('Insufficient CALL-E account balance. Please top up your credits at https://dashboard.heycall-e.com/account/billing or switch to Judge Dry-Run Mode.');
+      }
+
+      throw new Error(reason);
     }
 
     return {
@@ -89,7 +106,7 @@ export async function planCalleCall(contractor: Contractor, incident: Incident):
     };
   } catch (err: any) {
     console.error(`[CALL-E] plan_call error:`, err.message);
-    throw new Error(`Failed to plan call: ${err.message}`);
+    throw err;
   }
 }
 

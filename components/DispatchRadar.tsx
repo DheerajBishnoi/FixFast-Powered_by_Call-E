@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { CallAttempt, CascadeSession } from '@/lib/types';
-import { Phone, Star, CheckCircle2, XCircle, Clock, FileText, Lock, Radio, AlertCircle } from 'lucide-react';
+import { Phone, Star, CheckCircle2, XCircle, Clock, FileText, Lock, Radio, AlertCircle, AlertTriangle } from 'lucide-react';
 
 interface DispatchRadarProps {
   session: CascadeSession | null;
@@ -66,6 +66,20 @@ export default function DispatchRadar({ session, onSelectAttempt, selectedAttemp
             VOICEMAIL / UNANSWERED
           </span>
         );
+      case 'failed':
+        return (
+          <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">
+            <XCircle className="h-3.5 w-3.5 text-rose-400" />
+            {attempt.result?.declineReason === 'Insufficient CALL-E Balance' ? 'CREDIT EXHAUSTED' : 'CALL FAILED'}
+          </span>
+        );
+      case 'declined':
+        return (
+          <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">
+            <XCircle className="h-3.5 w-3.5 text-rose-400" />
+            DECLINED / UNAVAILABLE
+          </span>
+        );
       default:
         // Idle
         if (status === 'completed' && winningAttemptId && index > activeAttemptIndex) {
@@ -76,6 +90,13 @@ export default function DispatchRadar({ session, onSelectAttempt, selectedAttemp
             </span>
           );
         }
+        if (status === 'exhausted' || status === 'cancelled') {
+          return (
+            <span className="text-[11px] font-mono text-slate-600 px-2 py-0.5 rounded bg-slate-900 border border-slate-800">
+              SKIPPED / UNCALLED
+            </span>
+          );
+        }
         return (
           <span className="text-[11px] font-mono text-slate-500 px-2 py-0.5 rounded bg-slate-900 border border-slate-800">
             QUEUED #{index + 1}
@@ -83,6 +104,12 @@ export default function DispatchRadar({ session, onSelectAttempt, selectedAttemp
         );
     }
   };
+
+  const hasBalanceError = attempts.some(a => 
+    a.result?.declineReason === 'Insufficient CALL-E Balance' || 
+    a.result?.notes?.toLowerCase().includes('insufficient') ||
+    a.result?.notes?.toLowerCase().includes('balance')
+  );
 
   return (
     <div className="bg-[#0e1628]/90 rounded-2xl p-5 border border-slate-800 shadow-xl space-y-4">
@@ -119,6 +146,26 @@ export default function DispatchRadar({ session, onSelectAttempt, selectedAttemp
           </span>
         </div>
       </div>
+
+      {hasBalanceError && (
+        <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs flex items-start gap-3">
+          <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <p className="font-semibold text-amber-300">CALL-E Account Credit Limit Reached</p>
+            <p className="text-slate-300 text-[11px] leading-relaxed">
+              Your CALL-E account has used its daily free credits. To continue testing without phone charges, toggle to <strong className="text-white">Judge Dry-Run Mode</strong> in the top header, or top up your account balance at{' '}
+              <a
+                href="https://dashboard.heycall-e.com/account/billing"
+                target="_blank"
+                rel="noreferrer"
+                className="text-amber-400 underline underline-offset-2 hover:text-amber-300 font-mono"
+              >
+                dashboard.heycall-e.com
+              </a>.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Waterfall List of Contractors */}
       <div className="space-y-2.5">
