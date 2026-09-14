@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { TradeType } from '@/lib/types';
-import { Wrench, Zap, Lock, Wind, MapPin, Clock, DollarSign, AlertTriangle, PhoneCall, Info } from 'lucide-react';
+import { Wrench, Zap, Lock, Wind, MapPin, Clock, DollarSign, AlertTriangle, PhoneCall, Info, XCircle } from 'lucide-react';
 
 interface IntakeFormProps {
   trade: TradeType;
@@ -16,6 +16,7 @@ interface IntakeFormProps {
   maxBudget: number;
   onMaxBudgetChange: (budget: number) => void;
   onStartCascade: () => void;
+  onCancelCascade?: () => void;
   isCascading: boolean;
   mode: 'simulator' | 'live';
 }
@@ -32,6 +33,7 @@ export default function IntakeForm({
   maxBudget,
   onMaxBudgetChange,
   onStartCascade,
+  onCancelCascade,
   isCascading,
   mode
 }: IntakeFormProps) {
@@ -208,14 +210,14 @@ export default function IntakeForm({
         </div>
 
         {/* Action Button */}
-        <div className="pt-2 relative z-10">
+        <div className="pt-2 relative z-10 space-y-3">
           <button
             type="button"
             disabled={isCascading || !isValid}
             onClick={onStartCascade}
             className={`w-full py-4 px-4 rounded-xl font-bold text-sm tracking-wide transition-all duration-300 flex items-center justify-center gap-2 group ${
               isCascading
-                ? 'bg-slate-800 text-slate-400 cursor-not-allowed border border-slate-700'
+                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 cursor-wait'
                 : !isValid
                 ? 'bg-black/40 text-slate-500 border border-white/10 cursor-not-allowed'
                 : 'bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 hover:from-amber-500 hover:to-amber-400 text-black shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:shadow-[0_0_30px_rgba(245,158,11,0.5)] transform hover:-translate-y-0.5'
@@ -226,6 +228,17 @@ export default function IntakeForm({
               {isCascading ? 'AUTONOMOUS CASCADE IN PROGRESS...' : !isValid ? 'COMPLETE INCIDENT DETAILS TO DISPATCH' : 'DISPATCH AUTONOMOUS CASCADE AGENT'}
             </span>
           </button>
+
+          {isCascading && onCancelCascade && (
+            <button
+              type="button"
+              onClick={onCancelCascade}
+              className="w-full py-2.5 px-4 rounded-xl font-bold text-xs tracking-wide bg-red-600/20 hover:bg-red-600/30 text-red-300 border border-red-500/40 hover:border-red-500/60 transition-all flex items-center justify-center gap-2 shadow-lg shadow-red-500/10 cursor-pointer"
+            >
+              <XCircle className="h-4 w-4 text-red-400" />
+              <span>END / CANCEL CALLING PROCESS</span>
+            </button>
+          )}
         </div>
       </div>
     </div>

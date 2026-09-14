@@ -8,9 +8,10 @@ interface DispatchRadarProps {
   session: CascadeSession | null;
   onSelectAttempt: (attempt: CallAttempt) => void;
   selectedAttemptId: string | null;
+  onCancelCascade?: () => void;
 }
 
-export default function DispatchRadar({ session, onSelectAttempt, selectedAttemptId }: DispatchRadarProps) {
+export default function DispatchRadar({ session, onSelectAttempt, selectedAttemptId, onCancelCascade }: DispatchRadarProps) {
   if (!session) {
     return (
       <div className="bg-[#0e1628]/90 rounded-2xl p-6 border border-slate-800 flex flex-col items-center justify-center min-h-[360px] text-center">
@@ -95,12 +96,23 @@ export default function DispatchRadar({ session, onSelectAttempt, selectedAttemp
             Active Priority Roster • Dialing 1-by-1 to prevent duplicate contractor fees
           </p>
         </div>
-        <div className="text-right">
+        <div className="flex items-center gap-2">
+          {status === 'active' && onCancelCascade && (
+            <button
+              type="button"
+              onClick={onCancelCascade}
+              className="px-2.5 py-1 rounded text-[11px] font-bold uppercase tracking-wider bg-red-600/20 hover:bg-red-600/40 text-red-300 border border-red-500/40 transition-colors cursor-pointer"
+            >
+              Abort Cascade
+            </button>
+          )}
           <span className={`text-[11px] font-mono uppercase font-bold px-2 py-1 rounded ${
             status === 'completed'
               ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
               : status === 'active'
               ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
+              : status === 'cancelled'
+              ? 'bg-red-500/10 text-red-400 border border-red-500/30'
               : 'bg-slate-800 text-slate-400'
           }`}>
             Session: {status}

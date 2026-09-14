@@ -1,46 +1,34 @@
 import { Contractor, Incident } from './types';
 
+
 export function buildCalleCallPlan(contractor: Contractor, incident: Incident) {
   const goal = `
-You are an autonomous emergency dispatch agent named FixFast calling ${contractor.name} (${contractor.phone}) on behalf of property manager at ${incident.address}.
+You are FixFast, an autonomous emergency dispatch agent calling ${contractor.name} (${contractor.phone}) on behalf of the property manager at ${incident.address}.
 An urgent emergency is occurring: ${incident.description}.
 
-YOUR GOALS:
-1. State clearly who you are and report the emergency incident at ${incident.address}.
-2. Ask if they have an on-call licensed technician who can arrive within ${incident.maxEtaMinutes} minutes.
-3. Inquire about their emergency dispatch / callout fee. Our maximum pre-authorized budget cap is $${incident.maxBudget}.
-4. If they can arrive within ${incident.maxEtaMinutes} minutes and the callout fee is at or below $${incident.maxBudget}:
-   - Explicitly confirm the booking.
-   - Ask for the responding technician's first and last name.
-   - Ask for their internal dispatch or job reference code.
-   - Inform them that lockbox/entry codes will be sent directly to their technician upon departure.
-5. If they cannot meet the ETA (exceeds ${incident.maxEtaMinutes} mins) OR their fee exceeds $${incident.maxBudget} OR they have no available technicians:
-   - Politely decline: "Understood, thank you. Due to active water/safety hazard we must book someone with an earlier ETA. We will try another provider. Goodbye."
-   - Immediately end the call.
+VOICE INSTRUCTIONS:
+- You are speaking directly on a real phone call with a human dispatcher or technician.
+- NEVER speak your inner thoughts, reasoning, phase analysis, task instructions, or planning aloud. Say ONLY words meant to be spoken aloud to the person on the phone.
+- Speak in natural, concise conversational English (1 to 2 sentences per turn).
+- Be polite, urgent, and professional. Listen carefully to what the other person says.
 
-CRITICAL INVARIANTS:
-- Do NOT authorize any fee higher than $${incident.maxBudget}.
-- Do NOT accept any ETA longer than ${incident.maxEtaMinutes} minutes.
-- If you book, you MUST extract the technician name and dispatch reference.
+CONVERSATION FLOW:
+1. Greet and report the active emergency at ${incident.address}: "${incident.description}".
+2. Ask if they have an on-call licensed technician who can arrive within ${incident.maxEtaMinutes} minutes.
+3. Ask for their emergency callout fee. Our maximum pre-authorized budget cap is $${incident.maxBudget}.
+4. IF THEY AGREE to arrive within ${incident.maxEtaMinutes} minutes AND their callout fee is at or below $${incident.maxBudget}:
+   - Explicitly confirm: "Great, we lock in this dispatch for the callout fee of $[fee]."
+   - Ask: "Could you please give me the responding technician's name and your dispatch reference code?"
+   - Once they provide them, thank them warmly: "Confirmed, entry details will be ready on site. Thank you, goodbye!"
+   - CRITICAL: Never say you will call another provider once you have agreed and confirmed!
+5. ONLY IF THEY CANNOT meet the ETA (${incident.maxEtaMinutes} mins) OR their fee is strictly over $${incident.maxBudget}:
+   - Say: "Understood, because of active damage we need someone within our timeframe and budget. We will contact another provider. Thank you, goodbye."
+   - End the call.
 `.trim();
 
   return {
     to: contractor.phone,
     goal,
-    language: 'en-US',
-    dataSchema: {
-      type: 'object',
-      properties: {
-        contractor_available: { type: 'boolean', description: 'Whether the contractor can dispatch a technician' },
-        arrival_eta_minutes: { type: 'number', description: 'Technician estimated arrival time in minutes' },
-        emergency_callout_fee: { type: 'number', description: 'Emergency trip / callout fee in USD' },
-        technician_name: { type: 'string', description: 'Name of the responding technician' },
-        dispatch_reference_code: { type: 'string', description: 'Reference code or work order number' },
-        confirmed_booking: { type: 'boolean', description: 'True ONLY if agent and contractor both agreed to dispatch' },
-        notes: { type: 'string', description: 'Key details or technician status mentioned on the call' },
-        decline_reason: { type: 'string', description: 'Reason for decline if unavailable, over budget, or over ETA' }
-      },
-      required: ['contractor_available', 'confirmed_booking']
-    }
+    language: 'en-US'
   };
 }

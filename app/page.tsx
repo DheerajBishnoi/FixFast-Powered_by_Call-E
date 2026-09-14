@@ -82,6 +82,10 @@ export default function Home() {
           const updatedSession: CascadeSession = await stepRes.json();
           
           setSession(updatedSession);
+          if (inspectingAttempt) {
+            const fresh = updatedSession.attempts.find(a => a.id === inspectingAttempt.id);
+            if (fresh) setInspectingAttempt(fresh);
+          }
 
           if (updatedSession.status === 'active' && !updatedSession.winningAttemptId) {
             // Live mode takes 30-90s per call, poll safely every 3 seconds to protect quota
@@ -111,6 +115,20 @@ export default function Home() {
       console.error(err);
       setIsCascading(false);
       cascadingRef.current = false;
+    }
+  };
+
+  const handleCancelCascade = async () => {
+    cascadingRef.current = false;
+    setIsCascading(false);
+    if (session) {
+      try {
+        const res = await fetch(`/api/dispatch/${session.id}`, { method: 'DELETE' });
+        const updated = await res.json();
+        setSession(updated);
+      } catch (err) {
+        setSession(prev => prev ? { ...prev, status: 'cancelled' } : null);
+      }
     }
   };
 
@@ -167,7 +185,9 @@ export default function Home() {
               description={description} onDescriptionChange={(d) => { setDescription(d); setSelectedPresetId(null); }}
               maxEtaMinutes={maxEtaMinutes} onMaxEtaChange={setMaxEtaMinutes}
               maxBudget={maxBudget} onMaxBudgetChange={setMaxBudget}
-              onStartCascade={handleStartCascade} isCascading={isCascading} mode={mode}
+              onStartCascade={handleStartCascade}
+              onCancelCascade={handleCancelCascade}
+              isCascading={isCascading} mode={mode}
             />
 
             <div className="glass-panel rounded-2xl p-5 text-xs text-slate-400 space-y-3">
@@ -188,6 +208,7 @@ export default function Home() {
               session={session}
               onSelectAttempt={(att) => setInspectingAttempt(att)}
               selectedAttemptId={inspectingAttempt?.id || null}
+              onCancelCascade={handleCancelCascade}
             />
           </div>
         </div>

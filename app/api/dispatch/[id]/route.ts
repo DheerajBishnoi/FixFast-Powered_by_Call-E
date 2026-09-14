@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCascadeSession, stepCascadeSession } from '@/lib/engine';
+import { getCascadeSession, stepCascadeSession, cancelCascadeSession } from '@/lib/engine';
 
 export async function GET(
   req: NextRequest,
@@ -19,6 +19,18 @@ export async function POST(
   try {
     const updated = await stepCascadeSession(params.id);
     return NextResponse.json(updated);
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const cancelled = cancelCascadeSession(params.id);
+    return NextResponse.json(cancelled);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

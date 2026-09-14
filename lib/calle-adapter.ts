@@ -14,8 +14,10 @@ export interface CalleCallPlanResult {
 export interface CalleRunStatusResult {
   runId: string;
   status: string;
-  transcript?: Array<{ speaker: string; text: string }>;
+  durationSeconds?: number;
+  transcript?: Array<{ speaker: 'agent' | 'contractor' | 'ivr'; text: string; timestamp: string }>;
   structuredOutput?: any;
+  summary?: string;
 }
 
 /**
@@ -108,6 +110,57 @@ export async function executeCalleCall(planId: string, confirmToken: string): Pr
   }
 }
 
+export function parseTranscriptText(text: string): Array<{ speaker: 'agent' | 'contractor' | 'ivr'; text: string; timestamp: string }> {
+  if (!text || typeof text !== 'string') return [];
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  const messages: Array<{ speaker: 'agent' | 'contractor' | 'ivr'; text: string; timestamp: string }> = [];
+
+  for (const line of lines) {
+    const match = line.match(/^\[([0-9:]+)\]\s*(BOT|USER|AGENT|CONTRACTOR|IVR):\s*(.*)$/i);
+    if (match) {
+      const ts = match[1];
+      const role = match[2].toUpperCase();
+      const content = match[3];
+      const speaker: 'agent' | 'contractor' | 'ivr' = (role === 'BOT' || role === 'AGENT') ? 'agent' : (role === 'IVR') ? 'ivr' : 'contractor';
+      messages.push({
+        speaker,
+        text: content,
+        timestamp: ts
+      });
+    } else if (messages.length > 0) {
+      messages[messages.length - 1].text += ' ' + line;
+    }
+  }
+  return messages;
+}
+
+export function parseActivityEvents(activity: any[]): Array<{ speaker: 'agent' | 'contractor' | 'ivr'; text: string; timestamp: string }> {
+  if (!Array.isArray(activity)) return [];
+  const messages: Array<{ speaker: 'agent' | 'contractor' | 'ivr'; text: string; timestamp: string }> = [];
+
+  for (const act of activity) {
+    if (act.message && typeof act.message === 'string') {
+      const ts = new Date(act.ts || Date.now()).toLocaleTimeString();
+      if (act.message.startsWith('Bot is speaking: ')) {
+        const text = act.message.replace('Bot is speaking: ', '').trim();
+        if (text) messages.push({ speaker: 'agent', text, timestamp: ts });
+      } else if (act.message.startsWith('Callee said: ')) {
+        const text = act.message.replace('Callee said: ', '').trim();
+        if (text) {
+          const last = messages[messages.length - 1];
+          if (last && last.speaker === 'contractor' && text.startsWith(last.text)) {
+            last.text = text;
+            last.timestamp = ts;
+          } else {
+            messages.push({ speaker: 'contractor', text, timestamp: ts });
+          }
+        }
+      }
+    }
+  }
+  return messages;
+}
+
 /**
  * Polls status from 'calle call status'.
  */
@@ -117,11 +170,33 @@ export async function pollCalleRun(runId: string): Promise<CalleRunStatusResult>
     const parsed = extractJsonFromCli(stdout);
     const s = getStructured(parsed);
 
+    const rawStatus = s.status || parsed.status || 'in_progress';
+    const normalizedStatus = String(rawStatus).toLowerCase();
+
+    // Transcript extraction
+    let transcript: Array<{ speaker: 'agent' | 'contractor' | 'ivr'; text: string; timestamp: string }> = [];
+    if (typeof s.result?.transcript === 'string') {
+      transcript = parseTranscriptText(s.result.transcript);
+    } else if (Array.isArray(s.activity) && s.activity.length > 0) {
+      transcript = parseActivityEvents(s.activity);
+    } else if (Array.isArray(s.transcript)) {
+      transcript = s.transcript;
+    }
+
+    // Duration extraction
+    const durationSeconds = s.result?.calling?.duration_seconds 
+      || s.result?.calling?.calls?.[0]?.duration_seconds 
+      || 0;
+
+    const summary = s.result?.summary || s.result?.post_summary || '';
+
     return {
       runId,
-      status: s.status || parsed.status || 'in_progress',
-      transcript: s.transcript || parsed.transcript || [],
-      structuredOutput: s.data || s.structured_output || parsed.data
+      status: normalizedStatus,
+      durationSeconds,
+      transcript,
+      structuredOutput: s.result?.extracted || s.data || s.structured_output,
+      summary
     };
   } catch (err: any) {
     console.error(`[CALL-E] get_call_run error:`, err.message);
