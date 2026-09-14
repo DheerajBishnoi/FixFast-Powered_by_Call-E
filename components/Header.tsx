@@ -44,8 +44,9 @@ export default function Header({ mode, onModeToggle, calleAvailable }: HeaderPro
           {/* Mode Switcher */}
           <div className="flex items-center bg-black/50 p-1.5 rounded-xl border border-white/10 shadow-inner">
             <button
+              type="button"
               onClick={() => onModeToggle('simulator')}
-              className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide transition-all duration-300 ${
+              className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide cursor-pointer transition-all duration-300 ${
                 mode === 'simulator'
                   ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-black shadow-lg shadow-amber-500/20'
                   : 'text-slate-400 hover:text-white hover:bg-white/5'
@@ -55,8 +56,9 @@ export default function Header({ mode, onModeToggle, calleAvailable }: HeaderPro
               <span>Judge Dry-Run</span>
             </button>
             <button
+              type="button"
               onClick={() => onModeToggle('live')}
-              className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide transition-all duration-300 ${
+              className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide cursor-pointer transition-all duration-300 ${
                 mode === 'live'
                   ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-lg shadow-red-600/30 ring-1 ring-red-400/50'
                   : 'text-slate-400 hover:text-white hover:bg-white/5'
