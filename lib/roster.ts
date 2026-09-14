@@ -6,7 +6,7 @@ export const CONTRACTOR_ROSTER: Contractor[] = [
     id: 'plumb-01',
     name: 'Apex 24/7 Rapid Plumbers',
     trade: 'plumbing',
-    phone: '+91 9829709310',
+    phone: process.env.TEST_CONTRACTOR_PHONE || '+1 (415) 555-0192',
     rating: 4.8,
     avgResponseMins: 30,
     baseCalloutFee: 180,

@@ -1,9 +1,26 @@
 import { execFile } from 'child_process';
 import { promisify } from 'util';
+import path from 'path';
+import fs from 'fs';
 import { Contractor, Incident, StructuredCallResult } from './types';
 import { buildCalleCallPlan } from './prompt-builder';
 
 const execFileAsync = promisify(execFile);
+
+async function runCalle(args: string[], options: any = {}): Promise<{ stdout: string; stderr: string }> {
+  const localBin = path.resolve(process.cwd(), 'node_modules/@call-e/cli/bin/calle.js');
+  let res: { stdout: any; stderr: any };
+  if (fs.existsSync(localBin)) {
+    res = await execFileAsync(process.execPath, [localBin, ...args], { encoding: 'utf-8', ...options });
+  } else {
+    const isWin = process.platform === 'win32';
+    res = await execFileAsync(isWin ? 'npx.cmd' : 'npx', ['calle', ...args], { encoding: 'utf-8', ...options, shell: isWin });
+  }
+  return {
+    stdout: String(res.stdout || ''),
+    stderr: String(res.stderr || '')
+  };
+}
 
 export interface CalleCallPlanResult {
   planId: string;
@@ -44,9 +61,9 @@ function getStructured(parsed: any): any {
  */
 export async function checkCalleCliAvailable(): Promise<{ available: boolean; authenticated: boolean; error?: string }> {
   try {
-    const { stdout: versionOut } = await execFileAsync('npx', ['calle', '--version'], { timeout: 5000 });
+    const { stdout: versionOut } = await runCalle(['--version'], { timeout: 5000 });
     try {
-      const { stdout: authOut } = await execFileAsync('npx', ['calle', 'auth', 'status'], { timeout: 8000 });
+      const { stdout: authOut } = await runCalle(['auth', 'status'], { timeout: 8000 });
       let authenticated = false;
       try {
         const parsed = JSON.parse(authOut);
@@ -71,7 +88,7 @@ export async function planCalleCall(contractor: Contractor, incident: Incident):
   const safePhone = contractor.phone.replace(/[^0-9+]/g, '');
 
   try {
-    const { stdout } = await execFileAsync('npx', ['calle', 'call', 'plan', '--to-phone', safePhone, '--goal', plan.goal, '--json'], { timeout: 60000 });
+    const { stdout } = await runCalle(['call', 'plan', '--to-phone', safePhone, '--goal', plan.goal, '--json'], { timeout: 60000 });
     const parsed = extractJsonFromCli(stdout);
     const s = getStructured(parsed);
 
@@ -115,7 +132,7 @@ export async function planCalleCall(contractor: Contractor, incident: Incident):
  */
 export async function executeCalleCall(planId: string, confirmToken: string): Promise<{ runId: string }> {
   try {
-    const { stdout } = await execFileAsync('npx', ['calle', 'call', 'run', '--plan-id', planId, '--confirm-token', confirmToken, '--json'], { timeout: 60000 });
+    const { stdout } = await runCalle(['call', 'run', '--plan-id', planId, '--confirm-token', confirmToken, '--json'], { timeout: 60000 });
     const parsed = extractJsonFromCli(stdout);
     const s = getStructured(parsed);
 
@@ -183,7 +200,7 @@ export function parseActivityEvents(activity: any[]): Array<{ speaker: 'agent' |
  */
 export async function pollCalleRun(runId: string): Promise<CalleRunStatusResult> {
   try {
-    const { stdout } = await execFileAsync('npx', ['calle', 'call', 'status', '--run-id', runId, '--json'], { timeout: 20000 });
+    const { stdout } = await runCalle(['call', 'status', '--run-id', runId, '--json'], { timeout: 20000 });
     const parsed = extractJsonFromCli(stdout);
     const s = getStructured(parsed);
 

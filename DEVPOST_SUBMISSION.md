@@ -76,3 +76,48 @@ FixFast solves this by transforming **CALL-E** into a goal-driven, sequential co
 | **0:50 - 1:20** | Show Dispatch Radar animating. Call #1 reaches voicemail &rarr; marked skipped. Call #2 quotes $550 &rarr; agent politely declines as over-budget. | *"Watch the sequential cascade in action via CALL-E. Call #1 reaches Apex Plumbers' automated voicemail. FixFast recognizes it's unmonitored and moves immediately to Contractor #2. Bay Area Rooter answers, but quotes $550—our budget cap is $350. FixFast adheres to its safety constraints, declines, and moves to #3."* |
 | **1:20 - 1:45** | Call #3 connects with Metro Rooter. Click "View Transcript". Show technician Dave Miller agreed at $220 in 45 mins. Success card pops up! | *"Contractor #3 answers. Dave Miller can arrive in 45 minutes for a $220 fee. FixFast locks the booking! Notice what happens next: all remaining contractors are instantly locked as 'PROTECTED'. Zero duplicate calls. Zero double-booking fees."* |
 | **1:45 - 2:00** | Show Confirmed Dispatch Card, SMS preview, and portable `SKILL.md` agent skill. | *"The property manager and tenant receive immediate SMS alerts with the technician's name and ETA. FixFast is fully packaged as a portable Agent Skill ready for the ecosystem. With FixFast and CALL-E, your code isn't just calling—it's saving homes."* |
+
+---
+
+## 8. Awesome Phone Call Agents Pull Request Package
+
+FixFast is submitted to the [CALLE-AI/awesome-phone-call-agents](https://github.com/CALLE-AI/awesome-phone-call-agents) repository as a live-capable demo app and portable agent skill.
+
+### 📝 Pull Request README Entry
+Add the following line to `README.md` under `### Apps`:
+```markdown
+- [FixFast](https://github.com/DheerajBishnoi/FixFast-Powered_by_Call-E) - Autonomous emergency contractor dispatch agent that negotiates arrival ETA and callout fees via sequential CALL-E phone calls, with strict budget/time caps, verbatim audio grounding, and an atomic stop that prevents double-booking.
+```
+
+### 📋 Pull Request Submission Template
+Copy and paste this description when creating the Pull Request on GitHub:
+
+```markdown
+## Summary
+FixFast is an autonomous phone-dispatch agent that negotiates emergency trade contractors (plumbers, HVAC, electricians, locksmiths) within strict budget and arrival ETA constraints using CALL-E. It uses a strict sequential cascade state machine with an atomic stop invariant to eliminate costly duplicate callouts and double-booking.
+
+- **Repository**: https://github.com/DheerajBishnoi/FixFast-Powered_by_Call-E
+- **Hackathon**: CALL-E: Your Code Is Calling (Devpost)
+- **Contribution Area**: `apps/` & `skills/` (Runnable App + Portable Agent Skill)
+- **Review Tier**: Hackathon / live-capable demo (reviewed under `docs/community-review-policy.md`)
+
+## Compliance & Submission Checklist
+- [x] **English-only repository content**: Documentation, code, and UI are entirely in English.
+- [x] **Default Dry-Run / Preview**: FixFast defaults to the Judge Dry-Run Simulator (`mode: 'simulator'`). Reviewers can test realistic multi-turn calls, IVR handling, fee negotiations, and dispatch locks with zero telephone credits and zero real calls.
+- [x] **Explicit Operator Intent**: Live calling requires explicit toggle to `Live CALL-E Mode` and confirmation before dispatching.
+- [x] **Clear Side Effects**: Live mode dials real E.164 phone numbers via CALL-E CLI (`calle call plan` and `run_call`) and locks an emergency dispatch agreement only upon explicit verbal agreement within pre-authorized constraints.
+- [x] **Cancellation & Rollback**: Includes an instant "Abort Cascade" button (`cancelCascadeSession`) which cuts off remaining calls immediately. Clearly notes telephony limitations: active in-flight calls terminate per telephony carrier lifecycle.
+- [x] **Safe Credential Handling**: `CALLE_API_KEY` / `calle auth login` credentials remain server-side and are never exposed to browser bundles.
+- [x] **Phone Number Privacy**: All pre-configured sample numbers use standards-reserved fictitious numbers (`+1 (415) 555-01XX`). Real phone numbers in logs and UI are masked.
+- [x] **No Secrets Exposed**: Verified no API keys, private tokens, or personal phone numbers are checked into Git history.
+- [x] **Setup & Instructions Included**: Complete step-by-step local setup for Node.js 18+ and `npm run dev`.
+```
+
+---
+
+## 9. Links & Artifacts
+- **GitHub Repository**: [https://github.com/DheerajBishnoi/FixFast-Powered_by_Call-E](https://github.com/DheerajBishnoi/FixFast-Powered_by_Call-E)
+- **Portable Agent Skill**: [`skills/fixfast-emergency-dispatch/SKILL.md`](./skills/fixfast-emergency-dispatch/SKILL.md)
+- **Target Upstream PR**: [CALLE-AI/awesome-phone-call-agents](https://github.com/CALLE-AI/awesome-phone-call-agents)
+- **Hackathon Devpost**: [CALL-E: Your Code Is Calling](https://call-e.devpost.com/)
+
