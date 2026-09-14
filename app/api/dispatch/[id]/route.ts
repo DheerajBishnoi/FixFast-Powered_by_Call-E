@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCascadeSession, stepCascadeSession, cancelCascadeSession } from '@/lib/engine';
+export const dynamic = 'force-dynamic';
 
 export async function GET(
   req: NextRequest,

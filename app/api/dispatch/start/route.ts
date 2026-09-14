@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createCascadeSession } from '@/lib/engine';
 import { Incident } from '@/lib/types';
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
